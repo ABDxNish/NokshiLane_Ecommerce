@@ -47,6 +47,10 @@ export class SslCommerzService {
   ) {}
 
 
+  // =========================================
+  // ENVIRONMENT
+  // =========================================
+
   private live() {
     return (
       this.config.get<string>(
@@ -57,16 +61,35 @@ export class SslCommerzService {
   }
 
 
+  private isProduction() {
+    return (
+      this.config.get<string>(
+        'NODE_ENV',
+      ) === 'production'
+    );
+  }
+
+
+  // =========================================
+  // SSLCOMMERZ CREDENTIALS
+  // =========================================
+
   private credentials() {
     const storeId =
-      this.config.get<string>(
-        'SSL_STORE_ID',
-      );
+      this.config
+        .get<string>(
+          'SSL_STORE_ID',
+        )
+        ?.trim();
+
 
     const storePassword =
-      this.config.get<string>(
-        'SSL_STORE_PASSWORD',
-      );
+      this.config
+        .get<string>(
+          'SSL_STORE_PASSWORD',
+        )
+        ?.trim();
+
 
     if (
       !storeId ||
@@ -77,12 +100,67 @@ export class SslCommerzService {
       );
     }
 
+
     return {
       storeId,
       storePassword,
     };
   }
 
+
+  // =========================================
+  // PUBLIC BACKEND URL
+  // =========================================
+
+  private backendPublicUrl() {
+    const configuredUrl =
+      this.config
+        .get<string>(
+          'BACKEND_PUBLIC_URL',
+        )
+        ?.trim();
+
+
+    /*
+     * Production must NEVER silently
+     * fall back to localhost.
+     */
+    if (
+      !configuredUrl &&
+      this.isProduction()
+    ) {
+      throw new BadGatewayException(
+        'BACKEND_PUBLIC_URL is not configured for production',
+      );
+    }
+
+
+    /*
+     * Local fallback is allowed only
+     * during development.
+     */
+    const url =
+      configuredUrl ||
+      'http://localhost:3001';
+
+
+    /*
+     * Remove trailing slash:
+     *
+     * https://api.com/
+     * becomes
+     * https://api.com
+     */
+    return url.replace(
+      /\/+$/,
+      '',
+    );
+  }
+
+
+  // =========================================
+  // INITIATE PAYMENT
+  // =========================================
 
   async initiate(
     order: Order,
@@ -96,10 +174,7 @@ export class SslCommerzService {
 
 
     const backendUrl =
-      this.config.get<string>(
-        'BACKEND_PUBLIC_URL',
-      ) ||
-      'http://localhost:3001';
+      this.backendPublicUrl();
 
 
     const endpoint =
@@ -124,6 +199,31 @@ export class SslCommerzService {
       'NokshiLane Order';
 
 
+    /*
+     * These callback URLs are sent
+     * to SSLCOMMERZ when a payment
+     * session is created.
+     *
+     * Production example:
+     *
+     * https://nokshilane-api.onrender.com/orders/payment/success
+     */
+    const successUrl =
+      `${backendUrl}/orders/payment/success`;
+
+
+    const failUrl =
+      `${backendUrl}/orders/payment/fail`;
+
+
+    const cancelUrl =
+      `${backendUrl}/orders/payment/cancel`;
+
+
+    const ipnUrl =
+      `${backendUrl}/orders/payment/ipn`;
+
+
     const form =
       new URLSearchParams({
         store_id:
@@ -144,16 +244,16 @@ export class SslCommerzService {
           order.transactionId!,
 
         success_url:
-          `${backendUrl}/orders/payment/success`,
+          successUrl,
 
         fail_url:
-          `${backendUrl}/orders/payment/fail`,
+          failUrl,
 
         cancel_url:
-          `${backendUrl}/orders/payment/cancel`,
+          cancelUrl,
 
         ipn_url:
-          `${backendUrl}/orders/payment/ipn`,
+          ipnUrl,
 
         cus_name:
           order.recipientName,
@@ -182,7 +282,8 @@ export class SslCommerzService {
 
         num_of_item:
           String(
-            order.items?.length ||
+            order.items
+              ?.length ||
             1,
           ),
 
@@ -222,6 +323,7 @@ export class SslCommerzService {
     let response:
       Response;
 
+
     try {
       response =
         await fetch(
@@ -246,7 +348,9 @@ export class SslCommerzService {
     }
 
 
-    if (!response.ok) {
+    if (
+      !response.ok
+    ) {
       throw new BadGatewayException(
         `SSLCOMMERZ initiation failed with HTTP ${response.status}`,
       );
@@ -255,7 +359,8 @@ export class SslCommerzService {
 
     const result =
       (
-        await response.json()
+        await response
+          .json()
       ) as SslInitiationResponse;
 
 
@@ -282,6 +387,10 @@ export class SslCommerzService {
   }
 
 
+  // =========================================
+  // VALIDATE PAYMENT
+  // =========================================
+
   async validate(
     valId: string,
   ):
@@ -302,7 +411,9 @@ export class SslCommerzService {
 
 
     const url =
-      new URL(endpoint);
+      new URL(
+        endpoint,
+      );
 
 
     url.searchParams.set(
@@ -310,15 +421,18 @@ export class SslCommerzService {
       valId,
     );
 
+
     url.searchParams.set(
       'store_id',
       storeId,
     );
 
+
     url.searchParams.set(
       'store_passwd',
       storePassword,
     );
+
 
     url.searchParams.set(
       'format',
@@ -329,9 +443,12 @@ export class SslCommerzService {
     let response:
       Response;
 
+
     try {
       response =
-        await fetch(url);
+        await fetch(
+          url,
+        );
     } catch {
       throw new BadGatewayException(
         'Could not connect to SSLCOMMERZ validation API',
@@ -339,7 +456,9 @@ export class SslCommerzService {
     }
 
 
-    if (!response.ok) {
+    if (
+      !response.ok
+    ) {
       throw new BadGatewayException(
         `SSLCOMMERZ validation failed with HTTP ${response.status}`,
       );
@@ -347,7 +466,8 @@ export class SslCommerzService {
 
 
     return (
-      await response.json()
+      await response
+        .json()
     ) as SslValidationResponse;
   }
 }
