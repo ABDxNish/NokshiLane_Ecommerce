@@ -1,0 +1,245 @@
+NOKSHILANE E-COMMERCE
+=====================
+
+STACK
+-----
+
+Frontend:
+Next.js
+React
+TypeScript
+React Hook Form
+Zod
+Axios
+Pusher Client
+Custom responsive CSS
+
+Backend:
+NestJS
+TypeScript
+PostgreSQL
+TypeORM
+class-validator
+express-session
+bcrypt
+Google Sign-In
+Pusher
+Nodemailer
+
+Payment:
+Cash on Delivery
+SSLCOMMERZ Hosted Checkout
+
+
+============================================================
+STEP 1 — CREATE POSTGRESQL DATABASE
+============================================================
+
+Open pgAdmin Query Tool and run:
+
+CREATE DATABASE nokshilane_ecommerce;
+
+
+============================================================
+STEP 2 — BACKEND ENV
+============================================================
+
+Open terminal:
+
+cd backend
+
+Windows CMD:
+
+copy .env.example .env
+
+PowerShell:
+
+Copy-Item .env.example .env
+
+Then open:
+
+backend/.env
+
+Set at least:
+
+DB_PASSWORD=YOUR_POSTGRES_PASSWORD
+
+You can leave Google, Pusher, Mail and SSLCOMMERZ empty
+during the first run.
+
+
+============================================================
+STEP 3 — INSTALL + SEED BACKEND
+============================================================
+
+Inside backend:
+
+npm install
+
+Then:
+
+npm run seed
+
+Then:
+
+npm run start:dev
+
+
+Backend runs at:
+
+http://localhost:3001
+
+
+============================================================
+STEP 4 — FRONTEND ENV
+============================================================
+
+Open another terminal:
+
+cd frontend
+
+Windows CMD:
+
+copy .env.local.example .env.local
+
+PowerShell:
+
+Copy-Item .env.local.example .env.local
+
+
+============================================================
+STEP 5 — INSTALL + START FRONTEND
+============================================================
+
+Inside frontend:
+
+npm install
+
+Then:
+
+npm run dev
+
+
+Frontend runs at:
+
+http://localhost:3200
+
+
+============================================================
+DEFAULT ADMIN
+============================================================
+
+Email:
+admin@nokshilane.local
+
+Password:
+Admin123!
+
+
+============================================================
+FIRST TEST
+============================================================
+
+Before configuring external services, test:
+
+1. Homepage opens
+2. Product cards show
+3. Product carousel slides
+4. Register customer
+5. Login
+6. Add product to cart
+7. Wishlist
+8. Checkout with COD
+9. Login as Admin
+10. Check admin dashboard
+11. Change order status
+
+
+============================================================
+GOOGLE SIGN-IN
+============================================================
+
+Backend .env:
+
+GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+
+Frontend .env.local:
+
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=YOUR_GOOGLE_CLIENT_ID
+
+
+============================================================
+PUSHER
+============================================================
+
+Backend:
+
+PUSHER_APP_ID=
+PUSHER_KEY=
+PUSHER_SECRET=
+PUSHER_CLUSTER=ap2
+
+Frontend:
+
+NEXT_PUBLIC_PUSHER_KEY=
+NEXT_PUBLIC_PUSHER_CLUSTER=ap2
+
+
+============================================================
+MAILER
+============================================================
+
+Backend:
+
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USER=
+MAIL_PASSWORD=
+MAIL_FROM=
+
+For Gmail, use a Google App Password.
+
+
+============================================================
+SSLCOMMERZ SANDBOX
+============================================================
+
+Backend:
+
+SSL_STORE_ID=
+SSL_STORE_PASSWORD=
+SSL_IS_LIVE=false
+
+Read:
+
+PAYMENT_GATEWAY_EXPLAINED.md
+
+
+============================================================
+IMPORTANT
+============================================================
+
+For the first run DO NOT configure everything at once.
+
+Get this working first:
+
+PostgreSQL
+↓
+Backend
+↓
+Seed
+↓
+Frontend
+↓
+Normal Registration
+↓
+COD Checkout
+
+Then configure:
+
+Google
+Pusher
+Mailer
+SSLCOMMERZ
+
+one by one.
