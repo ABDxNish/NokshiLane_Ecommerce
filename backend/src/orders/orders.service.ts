@@ -1516,16 +1516,62 @@ export class OrdersService {
   // FRONTEND REDIRECT URL
   // =========================================================
 
-  frontendUrl(
-    path: string,
-  ) {
-    const base =
-      this.config.get<string>(
+  // =========================================================
+// FRONTEND REDIRECT URL
+// =========================================================
+
+frontendUrl(
+  path: string,
+) {
+  const configuredUrl =
+    this.config
+      .get<string>(
         'FRONTEND_URL',
-      ) ||
-      'http://localhost:3200';
+      )
+      ?.trim();
 
 
-    return `${base}${path}`;
+  const isProduction =
+    this.config
+      .get<string>(
+        'NODE_ENV',
+      ) === 'production';
+
+
+  /*
+   * In production we must never
+   * redirect customers to localhost.
+   */
+  if (
+    !configuredUrl &&
+    isProduction
+  ) {
+    throw new Error(
+      'FRONTEND_URL is not configured for production',
+    );
   }
+
+
+  /*
+   * localhost fallback is allowed
+   * only for local development.
+   */
+  const base =
+    (
+      configuredUrl ||
+      'http://localhost:3200'
+    ).replace(
+      /\/+$/,
+      '',
+    );
+
+
+  const cleanPath =
+    path.startsWith('/')
+      ? path
+      : `/${path}`;
+
+
+  return `${base}${cleanPath}`;
+}
 }
