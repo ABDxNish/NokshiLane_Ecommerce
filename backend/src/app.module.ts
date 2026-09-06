@@ -46,7 +46,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
             synchronize:
               config.get<string>(
                 'DB_SYNC',
-                'true',
+                'false',
               ) === 'true',
           };
         }
@@ -91,7 +91,7 @@ import { IntegrationsModule } from './integrations/integrations.module';
           synchronize:
             config.get<string>(
               'DB_SYNC',
-              'true',
+              'false',
             ) === 'true',
         };
       },
